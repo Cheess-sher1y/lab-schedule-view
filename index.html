@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="用日历管理实验周期、记录事件和交接任务。">
   <title>实验日程 · Lab Schedule</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TTDp9UHPzPT+mYzfauPNWcBc9X3OijOWLpsWBPL83fg='; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-jZ3jrxvwM1ei75PD57UxVXPJtFyFjdxJZZbwa01id+U='; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
 <style>:root {
   color-scheme: light;
   font-family: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
@@ -194,7 +194,7 @@ input[type=checkbox] { width:16px; height:16px; accent-color:var(--green); margi
   <div id="app" aria-live="off"><main class="boot">正在载入实验日程…</main></div>
   <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
   <div id="toast" role="status"></div>
-<script type="application/json" id="public-data">{"projects":[{"id":1,"name":"类器官培养","tasks":[]}],"events":[],"today":"2026-11-10","published_at":"2026-11-10T10:24:20.768078+08:00"}</script>
+<script type="application/json" id="public-data">{"projects":[{"id":1,"name":"类器官培养","tasks":[{"id":7,"project":1,"name":"干细胞培养","tags":"干细胞","files":[],"phases":[{"id":7,"start":"2026-11-10","period":1,"length":200,"ends":"2027-05-29","due":"2026-11-11","closed":0,"actions":[{"kind":"complete","due":"2026-11-10","result":"2026-11-10","at":"2026-11-10T22:22:10.534513+08:00"}]}]},{"id":6,"project":1,"name":"10.27分化类器官培养","tags":"6-25","files":[],"phases":[{"id":6,"start":"2026-11-09","period":2,"length":11,"ends":"2026-11-20","due":"2026-11-11","closed":0,"actions":[{"kind":"complete","due":"2026-11-09","result":"2026-11-09","at":"2026-11-09T22:21:39.296975+08:00"}]}]},{"id":5,"project":1,"name":"电极整合类器官培养","tags":"43+,电极","files":[],"phases":[{"id":5,"start":"2026-11-10","period":3,"length":200,"ends":"2027-05-29","due":"2026-11-13","closed":0,"actions":[{"kind":"complete","due":"2026-11-10","result":"2026-11-10","at":"2026-11-10T22:20:31.136170+08:00"}]}]},{"id":4,"project":1,"name":"43天后类器官培养","tags":"43+","files":[],"phases":[{"id":4,"start":"2026-11-09","period":3,"length":300,"ends":"2027-09-05","due":"2026-11-12","closed":0,"actions":[{"kind":"complete","due":"2026-11-09","result":"2026-11-09","at":"2026-11-09T22:19:24.063910+08:00"}]}]},{"id":3,"project":1,"name":"10.13分化类器官培养","tags":"25-43","files":[],"phases":[{"id":3,"start":"2026-11-09","period":2,"length":15,"ends":"2026-11-24","due":"2026-11-11","closed":0,"actions":[{"kind":"complete","due":"2026-11-09","result":"2026-11-09","at":"2026-11-09T22:19:31.068220+08:00"}]}]}]}],"events":[{"id":4,"project":1,"task":4,"phase":4,"day":"2027-09-05","content":"43天后类器官培养 · 阶段结束，待确认下一阶段","mark":"阶段结束","tags":"","files":[]},{"id":7,"project":1,"task":7,"phase":7,"day":"2027-05-29","content":"干细胞培养 · 阶段结束，待确认下一阶段","mark":"阶段结束","tags":"","files":[]},{"id":5,"project":1,"task":5,"phase":5,"day":"2027-05-29","content":"电极整合类器官培养 · 阶段结束，待确认下一阶段","mark":"阶段结束","tags":"","files":[]},{"id":3,"project":1,"task":3,"phase":3,"day":"2026-11-24","content":"10.13分化类器官培养 · 阶段结束，待确认下一阶段","mark":"阶段结束","tags":"","files":[]},{"id":6,"project":1,"task":6,"phase":6,"day":"2026-11-20","content":"10.27分化类器官培养 · 阶段结束，待确认下一阶段","mark":"阶段结束","tags":"","files":[]}],"today":"2026-11-10","published_at":"2026-11-10T22:25:58.449263+08:00"}</script>
 <script>"use strict";
 
 const app = document.querySelector("#app");
@@ -542,9 +542,12 @@ function pageBody() {
     '<section class="card">' + eventRows(state.events) + '</section>';
   if (view === "archive") {
     const archives = state.projects.filter(item => item.archived);
-    return heading(names.archive, "周期任务和解散的实验项目保留六个月。") +
+    const archivedTasks = active().flatMap(item => item.tasks.filter(t => t.archived));
+    const canClear = archives.length || archivedTasks.some(item => isLeader(project(item.project)));
+    return heading(names.archive, "周期任务和解散的实验项目保留六个月。组长可以提前清空归档。",
+      canClear ? button("清空归档", "clear-archive", {}, "danger") : "") +
       '<div class="stack"><section class="card stack"><h2>周期任务</h2>' +
-      taskRows(active().flatMap(item => item.tasks.filter(t => t.archived))) + '</section>' +
+      taskRows(archivedTasks) + '</section>' +
       '<section class="card stack"><h2>已解散的实验项目</h2>' + (archives.length ? archives.map(item =>
         listItem(item.name, "预计清理 " + item.purge, button("恢复", "restore-project", { id: item.id }))).join("") :
         empty("没有已解散的实验项目。")) + '</section></div>';
@@ -783,6 +786,9 @@ function actionDialog(item, phaseId, kind) {
 
 const modalActions = {
   export: exportDialog,
+  "clear-archive": () => show("清空归档", form("archive/clear",
+    '<p>将永久删除你担任组长的项目中已归档的周期任务，以及你已解散的实验项目。相关操作记录、事件和附件也会一并删除。</p>' +
+    '<p><strong>清空后无法恢复。</strong></p>', "永久删除")),
   "new-project": () => show("新建实验项目", form("project/create",
     field("实验项目名称", input("name", "", "text", 'required maxlength="200"')), "创建")),
   "rename": ({ id }) => show("重命名实验项目", form("project/rename",
@@ -947,7 +953,12 @@ document.addEventListener("submit", async event => {
       detailTask(task(data.task), route === "task/action" ? data.phase : 0);
     else if (route === "task") detailTask(task(result.id));
     else if (route === "event" && result.id) detailEvent(event(result.id));
-    notice("已保存");
+    if (route === "archive/clear") {
+      const { tasks, projects } = result;
+      notice(tasks || projects ? `已清除 ${tasks} 项归档任务和 ${projects} 个已解散项目` : "没有可清除的归档");
+    } else {
+      notice("已保存");
+    }
   } catch (error) {
     if (error.status === 409 && state) {
       await refresh().catch(() => {});
