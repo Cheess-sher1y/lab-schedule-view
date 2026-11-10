@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="zh-CN" data-public-view>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="用日历管理实验周期、记录事件和交接任务。">
+  <title>实验日程 · Lab Schedule</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TTDp9UHPzPT+mYzfauPNWcBc9X3OijOWLpsWBPL83fg='; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<style>:root {
+  color-scheme: light;
+  font-family: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --ink:#172921; --muted:#566861; --soft:#f3f7f5; --line:#dce6e0;
+  --green:#006450; --green-dark:#00513f; --green-soft:#e3f3eb; --nav:#132e26; --white:#fff;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:#f5f8f6; color:var(--ink); }
+button,input,select,textarea { font:inherit; }
+button,a { -webkit-tap-highlight-color:transparent; }
+button { cursor:pointer; }
+button:disabled { cursor:wait; opacity:.65; }
+a { color:var(--green); }
+:focus-visible { outline:3px solid #3f9e83; outline-offset:3px; }
+h1,h2,h3,p { margin:0; }
+h1 { font-size:clamp(25px,3vw,38px); letter-spacing:-.04em; font-weight:750; }
+h2 { font-size:19px; }
+h3 { font-size:15px; }
+p { line-height:1.65; }
+small,.muted { color:var(--muted); }
+.boot { padding:48px; }
+.btn { border:1px solid var(--line); padding:9px 13px; border-radius:8px; background:white; color:var(--ink); min-height:38px; font-weight:650; font-size:13px; }
+.btn:hover { background:var(--soft); }
+.btn.primary { background:var(--green); color:white; border-color:var(--green); }
+.btn.primary:hover { background:var(--green-dark); }
+.btn.danger { color:#a82f2c; border-color:#ead8d5; }
+.btn.ghost { border-color:transparent; background:transparent; }
+.btn.icon { font-size:20px; line-height:1; min-width:38px; padding:7px; }
+.btn.link { padding:3px 0; min-height:0; color:var(--green); border:0; background:transparent; }
+.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.between { justify-content:space-between; }
+.stack { display:grid; gap:14px; }
+.brand { display:flex; gap:12px; align-items:center; font-size:20px; font-weight:750; letter-spacing:-.04em; }
+.brand small { display:block; color:inherit; opacity:.68; font-size:9px; letter-spacing:.18em; margin-top:3px; font-weight:650; }
+.emblem { display:grid; place-items:center; width:39px; height:39px; border-radius:11px; color:#083a2e; background:#a4edcd; font-size:22px; }
+.emblem svg { width:22px; height:22px; }
+.auth { min-height:100dvh; display:grid; grid-template-columns:minmax(370px,1fr) minmax(420px,1.1fr); }
+.auth-main { background:#fff; display:flex; flex-direction:column; padding:clamp(24px,5vw,68px); }
+.auth-form { width:min(100%,390px); margin:auto; padding:44px 0; }
+.auth-form > p { margin:12px 0 25px; }
+.auth-form form { display:grid; gap:14px; }
+.auth-form form .btn { margin-top:6px; }
+.auth-links { display:flex; flex-wrap:wrap; gap:12px 20px; margin-top:20px; }
+.auth-aside { padding:clamp(35px,6vw,96px); background:var(--nav); color:#eaf9ef; display:flex; flex-direction:column; justify-content:center; gap:26px; }
+.auth-aside h2 { font-size:clamp(29px,4vw,54px); letter-spacing:-.04em; line-height:1.2; max-width:540px; }
+.auth-aside > p { color:#b4d4c4; max-width:360px; }
+.eyebrow { color:var(--green); font-size:11px; font-weight:750; letter-spacing:.16em; text-transform:uppercase; }
+.auth-aside .eyebrow { color:#a4edcd; }
+.auth-points { border-top:1px solid #3c594d; display:grid; gap:0; max-width:470px; }
+.auth-point { display:flex; align-items:center; gap:14px; border-bottom:1px solid #3c594d; padding:15px 0; }
+.auth-point span { font-size:11px; color:#a4edcd; }
+.app-shell { display:grid; grid-template-columns:226px minmax(0,1fr); min-height:100dvh; }
+.sidebar { background:var(--nav); color:#e8f4ec; padding:24px 15px 16px; position:sticky; top:0; height:100dvh; display:flex; flex-direction:column; gap:25px; overflow:auto; }
+.sidebar .brand { padding:0 8px 17px; border-bottom:1px solid #315146; }
+.side-label { font-size:10px; color:#b1c6b9; letter-spacing:.18em; padding:0 10px 8px; font-weight:650; }
+.side-nav { display:grid; gap:4px; }
+.side-btn { border:1px solid transparent; display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:transparent; color:inherit; padding:6px 9px; border-radius:9px; min-height:43px; font-size:14px; }
+.side-btn:hover { background:#214438; }
+.side-btn.active { background:#265344; border-color:#396958; color:#fff; font-weight:750; }
+.side-icon { display:grid; place-items:center; width:27px; height:27px; border-radius:7px; background:#203e34; color:#ade4cf; flex-shrink:0; }
+.side-icon svg { width:16px; height:16px; }
+.side-btn.active .side-icon { background:#a4edcd; color:#163c30; }
+.side-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.side-add { color:#ade4cf; }
+.side-bottom { margin-top:auto; border-top:1px solid #315146; padding-top:13px; }
+.topbar { padding:14px clamp(17px,3vw,32px); min-height:65px; background:#fff; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.topbar .label { font-size:12px; color:var(--muted); }
+.avatar { border:1px solid #cde5d8; width:34px; height:34px; border-radius:50%; background:var(--green-soft); color:var(--green); display:grid; place-items:center; font-weight:750; }
+.main { padding:28px clamp(17px,3vw,32px) 32px; max-width:1550px; margin:auto; }
+.heading { margin-bottom:22px; }
+.heading p { margin-top:5px; font-size:14px; }
+.card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:17px; min-width:0; box-shadow:0 2px 8px #173c2910; }
+.calendar-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(235px,285px); align-items:start; gap:17px; }
+.calendar { padding:0; overflow:hidden; }
+.cal-toolbar { padding:13px; border-bottom:1px solid var(--line); }
+.cal-toolbar h2 { font-size:18px; }
+.cal-toolbar > .row { min-width:0; }
+.cal-toolbar select { max-width:185px; text-overflow:ellipsis; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
+.weekday { text-align:center; color:var(--muted); background:#fafcfb; font-size:12px; padding:9px 2px; border-bottom:1px solid var(--line); }
+.cal-day { min-width:0; background:white; border:0; border-bottom:1px solid var(--line); border-right:1px solid var(--line); min-height:85px; display:flex; flex-direction:column; gap:4px; align-items:stretch; padding:6px; color:var(--ink); text-align:left; }
+.cal-day:nth-child(7n) { border-right:0; }
+.cal-day:nth-last-child(-n+7) { border-bottom:0; }
+.cal-day:focus-visible { outline-offset:-3px; z-index:1; }
+.cal-day:hover { background:#f4fbf7; }
+.cal-day.outside { background:#f8faf9; color:#657972; }
+.cal-day.selected { box-shadow:inset 0 0 0 2px #319677; background:#f6fcf8; position:relative; }
+.cal-day .date-num { display:grid; place-items:center; font-size:12px; font-weight:700; width:23px; height:23px; }
+.cal-day.today .date-num { background:var(--green); color:#fff; border-radius:50%; }
+.cal-entry { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#edf4f1; border-radius:4px; padding:3px 4px; font-size:10px; color:#345248; }
+.cal-entry.event { background:#edf0fb; color:#364c82; }
+.cal-entry.end { background:#f9ecda; color:#7b4c11; }
+.cal-entry.overdue { background:#fbe9e3; color:#8e3b2b; }
+.cal-entry.done { color:#096050; background:#e2f2e8; }
+.cal-more { font-size:10px; color:var(--muted); padding-left:3px; }
+.day-panel h2 { margin:5px 0 0; }
+.day-tools { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px 16px; margin-top:14px; }
+.day-count { color:var(--muted); font-size:13px; }
+.day-list { display:grid; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
+.entry { display:block; text-align:left; width:100%; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); padding:11px 12px; }
+.entry:hover { background:#f6faf8; border-color:#a4c9b7; }
+.entry strong,.entry small { display:block; overflow-wrap:anywhere; }
+.entry strong { margin:5px 0; font-size:13px; }
+.entry small { font-size:11px; }
+.pill { display:inline-block; padding:3px 7px; font-size:11px; line-height:1.2; border-radius:999px; background:var(--green-soft); color:#06533f; vertical-align:middle; }
+.pill.event { background:#edf0fb; color:#364c82; }
+.pill.end { background:#f9ecda; color:#7b4c11; }
+.pill.overdue { background:#fbe9e3; color:#8e3b2b; }
+.pill.done { background:#e2f2e8; color:#096050; }
+.list { display:grid; gap:10px; }
+.list-item { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); }
+.list-item:last-child { border-bottom:0; padding-bottom:0; }
+.list-item p { font-size:13px; }
+.empty { padding:18px; border:1px dashed #c8d8d0; border-radius:8px; font-size:13px; color:var(--muted); background:#f9fbfa; }
+.stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+.stat { padding:12px 15px; }
+.stat span { font-size:12px; color:var(--muted); }
+.stat strong { display:block; font-size:24px; margin-top:2px; }
+.project-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr); gap:14px; align-items:start; }
+.settings-card { width:min(100%,760px); padding:0; }
+.settings-section { padding:clamp(18px,3vw,26px); }
+.settings-section + .settings-section { border-top:1px solid var(--line); }
+.settings-account { display:flex; align-items:center; gap:14px; overflow-wrap:anywhere; }
+.settings-account .avatar { flex:none; width:44px; height:44px; font-size:17px; }
+.settings-email { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin-top:6px; font-size:13px; }
+.settings-notifications > p { margin-top:8px; font-size:14px; }
+.settings-notifications form { display:grid; justify-items:start; gap:16px; margin-top:18px; }
+.settings-choice { min-height:40px; padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--soft); }
+.settings-footer { padding-block:17px; }
+dialog { border:1px solid var(--line); border-radius:15px; width:min(620px,calc(100vw - 30px)); max-height:calc(100dvh - 28px); color:var(--ink); padding:0; box-shadow:0 18px 65px #112b2452; }
+dialog::backdrop { background:#0e2620a8; }
+.dialog-head { padding:17px 20px; border-bottom:1px solid var(--line); background:white; }
+.dialog-body { padding:18px 20px; display:grid; gap:14px; overflow-wrap:anywhere; }
+.dialog-body form { display:grid; gap:13px; }
+label { display:grid; gap:6px; font-size:13px; font-weight:650; }
+label small { font-weight:400; }
+input:not([type=checkbox]),select,textarea { width:100%; min-width:0; color:var(--ink); background:white; border:1px solid #c8d7cf; border-radius:7px; padding:8px 10px; min-height:38px; }
+textarea { min-height:95px; resize:vertical; }
+input[type=checkbox] { width:16px; height:16px; accent-color:var(--green); margin:0; }
+.check { display:flex; gap:8px; align-items:center; font-weight:500; }
+.fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; }
+.form-error { color:#a62a27; font-size:13px; }
+.form-error:empty { display:none; }
+.hr { border:0; border-top:1px solid var(--line); width:100%; margin:3px 0; }
+.history { background:#f7faf8; border:1px solid var(--line); border-radius:8px; padding:12px; }
+.history h3 { margin-bottom:7px; }
+.history p { font-size:13px; margin:3px 0; }
+.export-photos { margin-top:8px; }
+.export-photos summary { cursor:pointer; font-size:13px; }
+.export-photos .stack { margin:10px 0 0 16px; }
+.published-photo { margin:0; }
+.published-photo img { display:block; max-width:100%; max-height:60vh; border-radius:8px; }
+.published-photo figcaption { margin-top:4px; font-size:13px; overflow-wrap:anywhere; }
+#toast { position:fixed; z-index:10; bottom:18px; left:50%; transform:translateX(-50%); background:var(--nav); color:white; border-radius:8px; padding:10px 15px; max-width:calc(100vw - 24px); font-size:13px; }
+#toast:empty { display:none; }
+@media (max-width:1120px) { .app-shell { grid-template-columns:190px minmax(0,1fr); } .calendar-layout { grid-template-columns:minmax(0,1fr) minmax(190px,215px); } }
+@media (max-width:940px) { .calendar-layout { grid-template-columns:minmax(0,1fr); } .cal-day { min-height:72px; } }
+@media (max-width:730px) {
+  .app-shell { display:block; }
+  .sidebar { height:auto; position:static; gap:12px; padding:12px; }
+  .sidebar .brand { font-size:16px; }
+  .sidebar .emblem { width:30px; height:30px; }
+  .side-nav { display:flex; flex-wrap:wrap; gap:4px; }
+  .side-btn { width:auto; min-height:38px; padding:5px 7px; font-size:12px; gap:6px; }
+  .side-icon { width:23px; height:23px; }
+  .side-icon svg { width:14px; height:14px; }
+  .side-label,.sidebar .project-nav,.side-bottom { display:none; }
+  .topbar { min-height:47px; padding:7px 15px; }
+  .main { padding-top:18px; }
+  .auth { display:flex; flex-direction:column; }
+  .auth-main { min-height:64dvh; }
+  .auth-aside { padding:24px; gap:13px; }
+  .auth-aside h2 { font-size:26px; }
+  .auth-points { display:none; }
+  .project-layout { grid-template-columns:1fr; }
+  .cal-entry { font-size:0; height:6px; padding:0; background:#6b9a88; }
+  .cal-entry.event { background:#8699c5; }
+  .cal-entry.end,.cal-entry.overdue { background:#bc8063; }
+  .cal-day { min-height:58px; padding:3px; }
+  .cal-toolbar h2 { font-size:15px; }
+}
+</style>
+  
+</head>
+<body>
+  <div id="app" aria-live="off"><main class="boot">正在载入实验日程…</main></div>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+  <div id="toast" role="status"></div>
+<script type="application/json" id="public-data">{"projects":[{"id":1,"name":"类器官培养","tasks":[{"id":1,"project":1,"name":"新分化类器官","tags":"0-6天","files":[],"phases":[{"id":1,"start":"2026-11-09","period":2,"length":10,"ends":"2026-11-19","due":"2026-11-10","closed":0,"actions":[{"kind":"delay","due":"2026-11-09","result":"2026-11-10","at":"2026-11-09T15:58:17.133587+08:00"}]}]}]}],"events":[{"id":1,"project":1,"task":1,"phase":1,"day":"2026-11-19","content":"新分化类器官 · 阶段结束，待确认下一阶段","mark":"阶段结束","tags":"","files":[]}],"today":"2026-11-10","published_at":"2026-11-10T09:57:30.610687+08:00"}</script>
+<script>"use strict";
+
+const app = document.querySelector("#app");
+const modal = document.querySelector("#dialog");
+const toast = document.querySelector("#toast");
+const publicView = document.documentElement.hasAttribute("data-public-view");
+const localExport = !publicView && document.documentElement.hasAttribute("data-local-export");
+const query = new URLSearchParams(location.search);
+let openExport = localExport && query.get("view") === "export";
+const deep = { task: Number(query.get("task")), event: Number(query.get("event")) };
+const authLink = query.get("verify") ? ["verify", query.get("verify")]
+  : query.get("reset") ? ["reset", query.get("reset")] : null;
+let invite = publicView ? "" : query.get("join") || sessionStorage.getItem("lab-invite") || "";
+if (invite) sessionStorage.setItem("lab-invite", invite);
+if (!publicView && (authLink || query.has("join"))) history.replaceState({}, "", "/");
+let state, snapshot, selected, month, projectFilter = 0;
+let stateRequest = 0, appliedStateRequest = 0;
+let view = !publicView && (query.get("view") === "settings" || openExport) ? "settings" : "calendar";
+let authView = authLink ? authLink[0] : "login";
+let authNotice = "";
+let toastTimer;
+const names = { calendar: "实验日历", projects: "实验项目", tasks: "周期任务", events: "事件记录",
+  archive: "归档记录", group: "课题组成员", settings: "个人设置", project: "实验项目" };
+const markers = ["观察", "拍照", "采样", "处理", "异常", "记录", "其他"];
+const states = { complete: "已完成", skip: "已跳过", delay: "已延期", correct: "已更正" };
+const svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 3h6m-5 0v7l-5 7a2 2 0 0 0 1.6 3h10.8a2 2 0 0 0 1.6-3l-5-7V3M8 15h8"/><path d="M11 17h.01m3-4h.01"/></svg>';
+const brand = '<div class="brand"><span class="emblem">' + svg + '</span><div>实验日程<small>LAB SCHEDULE</small></div></div>';
+const sideIcons = {
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4m8-4v4M3 10h18m-13 5h2m4 0h2"/>',
+  projects: '<path d="M3 18V6a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  tasks: '<path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3"/>',
+  events: '<path d="M5 3h9l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3Zm9 0v5h5M9 12h6m-6 4h6"/>',
+  archive: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9m-9 4h4"/>',
+  group: '<circle cx="9" cy="7" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m2-16a3 3 0 0 1 0 6m4 10v-2a4 4 0 0 0-3-4"/>',
+  settings: '<path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  project: '<path d="M9 3h6m-5 0v7l-5 7a2 2 0 0 0 1.6 3h10.8a2 2 0 0 0 1.6-3l-5-7V3M8 15h8"/>',
+  add: '<path d="M12 5v14M5 12h14"/>',
+  logout: '<path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5m4-4 4-4-4-4m-4 4h10"/>',
+};
+const sideIcon = key => '<span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" ' +
+  'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false">' +
+  sideIcons[key] + '</svg></span>';
+
+const esc = (value = "") => String(value ?? "").replace(/[&<>"']/g, char =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+const empty = text => '<div class="empty">' + esc(text) + '</div>';
+const pill = (text, type = "") => '<span class="pill ' + esc(type) + '">' + esc(text) + '</span>';
+const button = (label, action, data = {}, type = "") => '<button type="button" class="btn ' + type +
+  '" data-action="' + action + '"' + Object.entries(data).map(([k, v]) => ' data-' + k + '="' + esc(v) + '"').join("") +
+  '>' + esc(label) + '</button>';
+const option = (label, value, current) => '<option value="' + esc(value) + '"' +
+  (String(value) === String(current) ? " selected" : "") + '>' + esc(label) + '</option>';
+const field = (label, content) => '<label>' + esc(label) + content + '</label>';
+const input = (name, value = "", type = "text", attrs = "required") =>
+  '<input name="' + name + '" type="' + type + '" value="' + esc(value) + '" ' + attrs + '>';
+const select = (name, options, attrs = "") => '<select name="' + name + '" ' + attrs + '>' + options + '</select>';
+const submit = text => '<button class="btn primary" type="submit">' + esc(text) + '</button>';
+const form = (route, body, text = "保存") => '<form data-route="' + route + '">' + body +
+  '<p class="form-error" role="alert"></p>' + submit(text) + '</form>';
+const project = id => state.projects.find(item => item.id === Number(id));
+const tasks = () => state.projects.flatMap(item => item.tasks);
+const task = id => tasks().find(item => item.id === Number(id));
+const event = id => state.events.find(item => item.id === Number(id));
+const phase = item => item.phases[item.phases.length - 1];
+const active = () => state.projects.filter(item => !item.archived);
+const activeTasks = item => item.archived ? [] : item.tasks.filter(task => !task.archived);
+const isLeader = item => item.owner === state.user.id;
+const dayDate = value => new Date(value + "T00:00:00Z");
+const iso = value => value.toISOString().slice(0, 10);
+const plus = (value, count) => {
+  const date = dayDate(value);
+  date.setUTCDate(date.getUTCDate() + count);
+  return iso(date);
+};
+const displayDate = value => value ? new Intl.DateTimeFormat("zh-CN", { month: "long", day: "numeric",
+  weekday: "long", timeZone: "UTC" }).format(dayDate(value)) : "";
+const timestamp = value => value ? value.slice(0, 16).replace("T", " ") : "";
+const trim = (value, max = 38) => value.length > max ? value.slice(0, max) + "…" : value;
+const tagList = value => (value || "").split(",").filter(Boolean).map(tag => pill(tag)).join(" ");
+
+async function request(route, data) {
+  if (publicView) throw new Error("公开版仅供查看");
+  const options = data === undefined ? {} : {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
+  };
+  const response = await fetch("/api/" + route, options);
+  const result = await response.json();
+  if (!response.ok) {
+    const error = new Error(result.error || "请求失败");
+    error.status = response.status;
+    throw error;
+  }
+  return result;
+}
+
+function notice(message) {
+  toast.textContent = message;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.textContent = ""; }, 3300);
+}
+
+async function refresh() {
+  const sequence = ++stateRequest;
+  const value = await request("state");
+  if (sequence < appliedStateRequest) return;
+  appliedStateRequest = sequence;
+  const key = JSON.stringify(value);
+  state = value;
+  if (!selected) selected = state.today;
+  if (!month) month = selected.slice(0, 7);
+  if (key !== snapshot) {
+    snapshot = key;
+    if (projectFilter && !project(projectFilter)) {
+      projectFilter = 0;
+      if (view === "project") view = "projects";
+      if (modal.open) modal.close();
+    }
+    render();
+  }
+}
+
+function authRender() {
+  const mode = authView;
+  const titles = { login: "登录实验日程", register: "创建账号", forgot: "找回密码",
+    resend: "重新发送验证邮件", verify: "验证邮箱", reset: "设置新密码" };
+  let fields = "";
+  const name = field("用户名", input("name", "", "text", 'required maxlength="40" autocomplete="username"'));
+  const email = field("邮箱", input("email", "", "email", 'required autocomplete="email"'));
+  const pass = field(mode === "reset" ? "新密码" : "密码",
+    input("password", "", "password", 'required maxlength="128" autocomplete="' +
+    (mode === "login" ? "current-password" : "new-password") + '"' + (mode === "login" ? "" : ' minlength="8"')));
+  if (mode === "login") fields = name + pass;
+  if (mode === "register") fields = name + email + pass +
+    field("课题组名称", input("group", "", "text", 'required maxlength="100"') +
+      '<small>登录后可输入组码加入已有课题组，也可新建。</small>');
+  if (["forgot", "resend"].includes(mode)) fields = email;
+  if (mode === "reset") fields = pass;
+  if (["verify", "reset"].includes(mode)) fields += input("token", authLink?.[1] || "", "hidden", "");
+  app.innerHTML = '<div class="auth"><main class="auth-main">' + brand +
+    '<div class="auth-form"><h1>' + titles[mode] + '</h1><p class="muted">' +
+    esc(authNotice || (mode === "login" ? "查看实验安排、培养阶段和工作组进度。" :
+      mode === "verify" ? "点击下方按钮完成邮箱验证。" : "账号通知会发送至你的邮箱。")) + '</p>' +
+    form("auth/" + mode, fields, { login: "登录", register: "注册", verify: "验证邮箱", reset: "更新密码" }[mode] || "发送邮件") +
+    '<div class="auth-links">' + (mode === "login" ? [
+      ["注册账号", "register"], ["忘记密码", "forgot"], ["重发验证邮件", "resend"],
+    ].map(([label, target]) => button(label, "auth", { target }, "link")).join("") :
+      button("返回登录", "auth", { target: "login" }, "link")) + '</div></div></main>' +
+    '<aside class="auth-aside"><span class="eyebrow">实验工作台</span><h2>用日历管理实验周期</h2>' +
+    '<p>查看当天的待办与事件，记录实际操作时间，和实验工作组共享进度。</p>' +
+    '<div class="auth-points"><div class="auth-point"><span>01</span>按周期安排培养操作</div>' +
+    '<div class="auth-point"><span>02</span>记录观察与阶段交接</div>' +
+    '<div class="auth-point"><span>03</span>北京时间 17:00 个人邮件摘要</div></div></aside></div>';
+}
+
+function navigation() {
+  const nav = ["calendar", "projects", "tasks", "events"];
+  if (!publicView) nav.push("archive", "group", "settings");
+  return '<aside class="sidebar">' + brand + '<nav aria-label="工作台"><p class="side-label">工作台</p><div class="side-nav">' +
+    nav.map(key => '<button type="button" class="side-btn' + (view === key ? ' active" aria-current="page' : '') +
+      '" data-action="nav" data-view="' + key + '">' + sideIcon(key) + names[key] + '</button>').join("") + '</div></nav>' +
+    '<div class="project-nav"><div class="side-label">' + (publicView ? "公开实验" : "我的实验") + '</div><div class="side-nav">' +
+    active().slice(0, 8).map(item => '<button type="button" class="side-btn' +
+      (view === "project" && projectFilter === item.id ? ' active" aria-current="page' : '') +
+      '" data-action="project" data-id="' + item.id + '">' + sideIcon("project") + '<span class="side-name">' +
+      esc(item.name) + '</span></button>').join("") +
+    (publicView ? "" : '<button class="side-btn side-add" type="button" data-action="new-project">' +
+      sideIcon("add") + '新建实验项目</button>') + '</div></div>' +
+    (publicView ? "" : '<div class="side-bottom"><button class="side-btn" type="button" data-action="logout">' +
+      sideIcon("logout") + '退出登录</button></div>') + '</aside>';
+}
+
+function heading(label, intro, controls = "") {
+  return '<div class="heading row between"><div><h1>' + esc(label) + '</h1><p class="muted">' +
+    esc(intro) + '</p></div><div class="row">' + controls + '</div></div>';
+}
+
+function entryList(key, pid) {
+  const result = [];
+  for (const item of active()) {
+    if (pid && item.id !== pid) continue;
+    for (const t of activeTasks(item)) {
+      const current = phase(t);
+      for (const h of t.phases) {
+        const actions = h.actions.filter(a => a.kind !== "correct" && !a.void);
+        for (const action of actions) {
+          if ((action.kind === "complete" && (action.result === key || action.due === key)) ||
+              (action.kind !== "complete" && action.due === key)) {
+            result.push({ title: t.name, status: states[action.kind], type: action.kind === "delay" ? "" : "done",
+              detail: action.kind === "delay" ? "改至 " + action.result :
+                action.kind === "complete" && action.result !== key ? "实际完成 " + action.result : action.username,
+              project: item.name, action: "task-detail", id: t.id, phase: h.id });
+          }
+        }
+        if (!h.due || h.closed || h.id !== current.id || key >= h.ends) continue;
+        const overdue = h.due < state.today && state.today < h.ends;
+        if (key === h.due || (overdue && key === state.today)) {
+          result.push({ title: t.name, status: overdue ? "逾期" : "待办", type: overdue ? "overdue" : "",
+            detail: overdue ? "原计划 " + h.due : "", project: item.name, action: "task-detail", id: t.id, phase: h.id });
+        } else if (key > h.due && key > state.today && (dayDate(key) - dayDate(h.due)) / 86400000 % h.period === 0) {
+          result.push({ title: t.name, status: "计划", type: "", project: item.name,
+            action: "task-detail", id: t.id, phase: h.id });
+        }
+      }
+    }
+  }
+  for (const item of state.events) {
+    if (item.day !== key || (pid && item.project !== pid) ||
+      (item.phase && task(item.task)?.archived)) continue;
+    result.push({ title: trim(item.content), status: item.mark, type: item.phase ? "end" : "event",
+      project: project(item.project)?.name, action: item.phase ? "task-detail" : "event-detail",
+      id: item.phase ? item.task : item.id, phase: item.phase });
+  }
+  return result;
+}
+
+function calendar() {
+  const anchor = month + "-01";
+  const offset = (dayDate(anchor).getUTCDay() + 6) % 7;
+  const start = plus(anchor, -offset);
+  const label = month.replace(/^(.{4})-(\d{2})$/, (_, year, number) => year + " 年 " + Number(number) + " 月");
+  const days = Array.from({ length: 42 }, (_, i) => {
+    const key = plus(start, i);
+    const entries = entryList(key, projectFilter);
+    const className = "cal-day" + (key.slice(0, 7) === month ? "" : " outside") +
+      (key === selected ? " selected" : "") + (key === state.today ? " today" : "");
+    return '<button type="button" class="' + className + '" data-action="day" data-day="' + key +
+      '" aria-label="' + esc(displayDate(key) + "，" + entries.length + " 项") + '" aria-pressed="' + (key === selected) +
+      '"><span class="date-num">' + Number(key.slice(-2)) + '</span>' +
+      entries.slice(0, 2).map(entry => '<span class="cal-entry ' + entry.type + '">' + esc(entry.title) + '</span>').join("") +
+      (entries.length > 2 ? '<span class="cal-more">+' + (entries.length - 2) + '</span>' : "") + '</button>';
+  }).join("");
+  const entries = entryList(selected, projectFilter);
+  const controls = publicView ? "" : button("新建实验项目", "new-project") +
+    button("＋ 新建任务", "new-task", { project: projectFilter }, "primary");
+  return heading(names.calendar, "查看当天的培养待办、阶段提醒与实验记录。", controls) +
+    '<div class="calendar-layout"><section class="calendar card"><div class="cal-toolbar row between">' +
+    '<h2>' + label + '</h2><div class="row">' +
+    button("‹", "month", { step: -1 }, "icon") + button(publicView ? "发布日期" : "今天", "today") +
+    button("›", "month", { step: 1 }, "icon") + '</div>' +
+    '<div class="row">' + select("filter", option("全部实验", 0, projectFilter) +
+      active().map(item => option(item.name, item.id, projectFilter)).join(""), 'aria-label="筛选实验项目"') +
+    '</div></div><div class="cal-grid">' + ["一", "二", "三", "四", "五", "六", "日"]
+      .map(day => '<div class="weekday">' + day + '</div>').join("") + days + '</div></section>' +
+    '<section class="card day-panel"><span class="eyebrow">' +
+    (selected === state.today ? (publicView ? "发布日期" : "今日") : "所选日期") +
+    '</span><h2>' + esc(displayDate(selected)) + '</h2><div class="day-tools">' +
+    '<span class="day-count">' + entries.length + ' 条安排</span>' +
+    (publicView ? "" : button("＋ 添加事件", "new-event", { day: selected, project: projectFilter })) + '</div>' +
+    '<div class="day-list">' + (entries.length ? entries.map(entry => '<button type="button" class="entry" data-action="' +
+      entry.action + '" data-id="' + entry.id + '" data-phase="' + (entry.phase || "") + '">' +
+      pill(entry.status, entry.type) + '<strong>' + esc(entry.title) + '</strong><small>' + esc(entry.project) +
+      (entry.detail ? " · " + esc(entry.detail) : "") + '</small></button>').join("") :
+      empty(publicView || active().length ? "这一天还没有安排。" : "先创建一个实验项目，再添加培养任务或事件。")) + '</div></section></div>';
+}
+
+function listItem(title, sub, control, extra = "") {
+  return '<div class="list-item"><div><h3>' + esc(title) + '</h3><p class="muted">' + esc(sub) + '</p>' +
+    extra + '</div><div class="row">' + control + '</div></div>';
+}
+
+function taskRows(items) {
+  return items.length ? items.map(item => listItem(item.name, project(item.project).name + " · " +
+    (publicView ? "" : (item.owner_name || "未设置负责人") + " · ") + (item.archived ? "预计清理 " + item.purge :
+      "阶段结束 " + phase(item).ends), button("查看", "task-detail", { id: item.id }), tagList(item.tags))).join("") :
+    empty("这里还没有周期任务。");
+}
+
+function eventRows(items) {
+  return items.length ? items.map(item => listItem(trim(item.content, 90), item.day + " · " +
+    project(item.project).name + " · " + item.mark,
+    button("查看", item.phase ? "task-detail" : "event-detail",
+      { id: item.phase ? item.task : item.id, phase: item.phase || "" }), tagList(item.tags))).join("") :
+    empty("这里还没有事件记录。");
+}
+
+function projectsPage() {
+  const items = active();
+  if (publicView) return heading(names.projects, "浏览已发布的实验项目。") +
+    '<section class="card">' + items.map(item => listItem(item.name, item.tasks.length + " 项周期任务",
+      button("打开", "project", { id: item.id }))).join("") + '</section>';
+  return heading(names.projects, "查看你创建或通过实验工作组访问的实验。", button("＋ 新建实验项目", "new-project", {}, "primary")) +
+    '<section class="card">' + (items.length ? items.map(item => listItem(item.name, "组长 " + item.owner_name + " · " +
+      item.members.length + " 位成员", button("打开", "project", { id: item.id }))).join("") :
+      empty("建立第一个实验项目，即可开始排程。")) + '</section>';
+}
+
+function projectPage() {
+  const item = project(projectFilter);
+  if (!item || item.archived) return projectsPage();
+  const events = state.events.filter(e => e.project === item.id);
+  if (publicView) return heading(item.name, "公开实验记录", button("查看日历", "project-calendar", { id: item.id })) +
+    '<div class="stack"><section class="card stack"><h2>周期任务</h2>' + taskRows(activeTasks(item)) +
+    '</section><section class="card stack"><h2>' + names.events + '</h2>' + eventRows(events) + '</section></div>';
+  const lead = isLeader(item);
+  return heading(item.name, "实验工作组 · 组长 " + item.owner_name, button("查看日历", "project-calendar", { id: item.id }) +
+    button("＋ 新建任务", "new-task", { project: item.id }, "primary")) +
+    '<div class="project-layout"><div class="stack"><section class="card stack"><div class="row between"><h2>周期任务</h2></div>' +
+    taskRows(activeTasks(item)) + '</section><section class="card stack"><div class="row between"><h2>' + names.events + '</h2>' +
+    button("＋ 添加事件", "new-event", { project: item.id, day: selected }) + '</div>' +
+    eventRows(events) + '</section></div><div class="stack"><section class="card stack"><div class="row between"><h2>工作组成员</h2>' +
+    (lead ? button("分享", "share", { id: item.id }) : "") + '</div>' +
+    item.members.map(user => listItem(user.name, user.id === item.owner ? "组长" : "成员", lead && user.id !== item.owner ?
+      button("移除", "remove-member", { id: item.id, user: user.id }, "danger") : "")).join("") +
+    '</section><section class="card stack"><h2>最近操作</h2>' + (item.audit.length ?
+      item.audit.map(a => '<p class="muted"><small>' + esc(a.name + " · " + a.operation + " · " + timestamp(a.at)) + '</small></p>').join("") :
+      empty("暂无操作记录。")) + '</section>' +
+    (lead ? '<div class="row">' + button("重命名", "rename", { id: item.id }) +
+      button("解散实验项目", "archive-project", { id: item.id }, "danger") + '</div>' : "") + '</div></div>';
+}
+
+function groupPage() {
+  const group = state.group;
+  const copy = group ? location.origin + "/?join=" + encodeURIComponent(group.code) : "";
+  return heading(names.group, "查看同组成员，加入或管理你所在的课题组。") +
+    '<section class="card stack">' + (group ? '<div class="row between"><h2>' + esc(group.name) + '</h2>' +
+      button("退出课题组", "group-leave", {}, "danger") + '</div><p>组码 <strong>' + esc(group.code) +
+      '</strong></p><p><a href="' + esc(copy) + '">' + esc(copy) + '</a></p>' +
+      group.members.map(item => listItem(item.name, item.id === state.user.id ? "你" : "同组成员", "")).join("") :
+      empty("尚未加入课题组。注册时填写的名称为「" + state.user.group_name + "」。")) +
+    '<div class="row">' + button("输入组码", "group-join") + button("新建课题组", "group-create", {}, "primary") + '</div></section>';
+}
+
+function settingsPage() {
+  return heading(names.settings, "查看账号信息并管理邮件提醒。") +
+    '<section class="card settings-card"><div class="settings-section settings-account">' +
+    '<span class="avatar" aria-hidden="true">' + esc(state.user.name.slice(0, 1).toUpperCase()) + '</span>' +
+    '<div><h2>' + esc(state.user.name) + '</h2><div class="settings-email">' +
+    '<span class="muted">' + esc(state.user.email) + '</span>' + pill("邮箱已验证") + '</div></div></div>' +
+    '<div class="settings-section settings-notifications"><h2>每日邮件摘要</h2>' +
+    '<p class="muted">有待办或已开启提醒的事件时，系统会在北京时间 17:00 汇总你能访问的实验项目，并发送一封邮件。</p>' +
+    form("settings", '<label class="check settings-choice"><input type="checkbox" name="subscribed"' +
+      (state.user.subscribed ? " checked" : "") + '>接收每日邮件摘要</label>', "保存设置") + '</div>' +
+    '<div class="settings-section settings-footer row">' + button("导出公开版", "export", {}, "primary") +
+    button("退出登录", "logout") + '</div></section>';
+}
+
+function pageBody() {
+  if (view === "projects") return projectsPage();
+  if (view === "project") return projectPage();
+  if (view === "tasks") return heading(names.tasks, "查看所有实验项目中的培养与周期操作。",
+    publicView ? "" : button("＋ 新建任务", "new-task", {}, "primary")) +
+    '<section class="card">' + taskRows(state.projects.flatMap(activeTasks)) + '</section>';
+  if (view === "events") return heading(names.events, "按发生日期查看观察记录与阶段节点。",
+    publicView ? "" : button("＋ 添加事件", "new-event", { day: selected }, "primary")) +
+    '<section class="card">' + eventRows(state.events) + '</section>';
+  if (view === "archive") {
+    const archives = state.projects.filter(item => item.archived);
+    return heading(names.archive, "周期任务和解散的实验项目保留六个月。") +
+      '<div class="stack"><section class="card stack"><h2>周期任务</h2>' +
+      taskRows(active().flatMap(item => item.tasks.filter(t => t.archived))) + '</section>' +
+      '<section class="card stack"><h2>已解散的实验项目</h2>' + (archives.length ? archives.map(item =>
+        listItem(item.name, "预计清理 " + item.purge, button("恢复", "restore-project", { id: item.id }))).join("") :
+        empty("没有已解散的实验项目。")) + '</section></div>';
+  }
+  if (view === "group") return groupPage();
+  if (view === "settings") return settingsPage();
+  return calendar();
+}
+
+function render() {
+  if (!state) { authRender(); return; }
+  if (publicView) {
+    app.innerHTML = '<div class="app-shell">' + navigation() +
+      '<div><header class="topbar"><span class="label">公开版 · 仅供查看</span><span class="label">发布于 ' +
+      esc(timestamp(state.published_at)) + '（北京时间）</span></header><main class="main">' +
+      pageBody() + '</main></div></div>';
+    return;
+  }
+  app.innerHTML = '<div class="app-shell">' + navigation() + '<div><header class="topbar"><span class="label">工作台　/　' +
+    esc(names[view]) + '</span><div class="row"><span class="label">' + esc(displayDate(state.today)) +
+    '</span><button class="avatar" type="button" data-action="nav" data-view="settings" aria-label="个人设置">' +
+    esc(state.user.name.slice(0, 1).toUpperCase()) + '</button></div></header><main class="main">' +
+    pageBody() + '</main></div></div>';
+}
+
+function show(title, content) {
+  modal.innerHTML = '<div class="dialog-head row between"><h2 id="dialog-title">' + esc(title) + '</h2>' +
+    button("关闭", "close", {}, "ghost") + '</div><div class="dialog-body">' + content + '</div>';
+  if (!modal.open) modal.showModal();
+}
+
+function confirmForm(title, text, route, payload) {
+  show(title, '<p>' + esc(text) + '</p>' + form(route,
+    Object.entries(payload).map(([key, value]) => input(key, value, "hidden", "")).join(""), "确认"));
+}
+
+function exportDialog() {
+  const items = active().filter(isLeader);
+  if (!items.length) {
+    show("导出公开版", empty("请先创建一个实验项目。"));
+    return;
+  }
+  const saved = state.local_export || {};
+  const check = (name, id, label) => '<label class="check"><input type="checkbox" name="' + name +
+    '" value="' + id + '"' + (saved[name]?.includes(id) ? " checked" : "") + '>' + esc(label) + '</label>';
+  const choices = items.map(item => {
+    const photos = [
+      ...activeTasks(item).map(t => [t.name, t.files]),
+      ...state.events.filter(e => e.project === item.id && !task(e.task)?.archived)
+        .map(e => [e.day + " · " + trim(e.content), e.files]),
+    ].flatMap(([label, files]) => files.filter(f => f.role === "photo" && /\.(jpe?g|png|gif|webp|bmp|avif)$/i.test(f.name))
+      .map(f => check("photos", f.id, label + " · " + f.name)));
+    return '<div class="history">' + check("projects", item.id, item.name) +
+      (photos.length ? '<details class="export-photos"><summary>选择要公开的照片</summary><div class="stack">' +
+        photos.join("") + '</div></details>' : "") + '</div>';
+  }).join("");
+  show("导出公开版", form("export",
+    '<p>勾选你愿意公开的实验项目。导出包含项目名称、当前任务及其操作记录、相关事件和你单独勾选的照片。</p>' +
+    '<p class="muted">照片会保留原始文件信息。' +
+    (localExport ? '保存后会记住选择，并覆盖项目目录下「GitHub发布」里的 index.html。' :
+      '发布前可打开下载的网页预览。') + '</p>' + choices,
+    localExport ? "保存选择并导出" : "下载公开版网页"));
+}
+
+async function exportPublicPage(form) {
+  const fields = new FormData(form);
+  const selection = { projects: fields.getAll("projects").map(Number), photos: fields.getAll("photos").map(Number) };
+  if (localExport) {
+    await request("export/local", selection);
+    state.local_export = selection;
+    modal.close();
+    notice("已覆盖 GitHub发布/index.html");
+    return;
+  }
+  const response = await fetch("/api/export", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(selection),
+  });
+  if (!response.ok) throw new Error((await response.json()).error || "导出失败");
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "index.html";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  notice("公开版已下载");
+}
+
+function projectOptions(current) {
+  return active().map(item => option(item.name, item.id, current)).join("") + option("＋ 新建实验项目", "new", current);
+}
+
+function projectFields(current) {
+  return field("所属实验项目", select("project", projectOptions(current), "required")) +
+    '<div data-new-project hidden>' + field("新实验项目名称", input("newProject", "", "text", 'maxlength="200"')) + '</div>';
+}
+
+function projectMembers(pid, current) {
+  return option("未设置", "", current) + (project(pid)?.members || []).map(u => option(u.name, u.id, current)).join("");
+}
+
+function taskOptions(pid, current) {
+  return option("无关联", "", current) + (project(pid)?.tasks || []).filter(t => !t.archived || t.id === Number(current))
+    .map(t => option(t.name, t.id, current)).join("");
+}
+
+function files(item, edit = false) {
+  if (publicView) return (item?.files || []).map(file =>
+    '<figure class="published-photo"><img loading="lazy" src="' + esc(file.url) + '" alt="' + esc(file.name) +
+    '"><figcaption>' + esc(file.name) + '</figcaption></figure>').join("");
+  return (item?.files || []).map(f => '<div class="row"><a href="/api/file/' + f.id + '">' +
+    esc(f.name) + '</a><small>' + (f.role === "protocol" ? "操作规程" : "图片") + '</small>' +
+    (edit ? '<label class="check"><input type="checkbox" name="removed" value="' + f.id + '">移除</label>' : "") + '</div>').join("");
+}
+
+function phaseInputs(p, fallback) {
+  return '<div class="fields">' + field("开始日期", input("start", p?.start || fallback, "date")) +
+    field("周期天数", input("period", p?.period || 2, "number", 'required min="1" step="1"')) +
+    field("阶段时长（天）", input("length", p?.length || 14, "number", 'required min="1" step="1"')) + '</div>';
+}
+
+function tagsField(value) {
+  const items = [...tasks(), ...state.events].flatMap(item => (item.tags || "").split(",")).filter(Boolean);
+  const unique = [...new Set(items)];
+  return field("标签（用逗号分隔）", input("tags", value, "text", 'list="known-tags" maxlength="620"') +
+    '<datalist id="known-tags">' + unique.map(tag => option(tag, tag, "")).join("") + '</datalist>');
+}
+
+function editTask(item, pid) {
+  const chosen = item?.project || Number(pid) || active()[0]?.id || "new";
+  show(item ? "编辑周期任务" : "新建周期任务", form("task",
+    input("id", item?.id || "", "hidden", "") + field("任务名称", input("name", item?.name || "", "text", 'required maxlength="200"')) +
+    projectFields(chosen) + field("负责人（选填）", select("owner", projectMembers(chosen, item?.owner || ""))) +
+    phaseInputs(item && phase(item), state.today) + tagsField(item?.tags || "") +
+    field("培养照片（选填）", input("photo", "", "file", 'multiple accept="image/*,.tif,.tiff,.heic,.heif,.dng"')) +
+    field("操作规程（选填）", input("protocol", "", "file", "multiple")) + files(item, true)));
+  updateProjectFields(modal.querySelector("form"));
+}
+
+function editEvent(item, pid, day) {
+  const chosen = item?.project || Number(pid) || active()[0]?.id || "new";
+  show(item ? "编辑事件" : "新建事件", form("event", input("id", item?.id || "", "hidden", "") +
+    field("事件内容", '<textarea name="content" required maxlength="3000">' + esc(item?.content || "") + '</textarea>') +
+    projectFields(chosen) + '<div class="fields">' + field("发生日期", input("day", item?.day || day || selected, "date")) +
+    field("日历标记", select("mark", option("选择标记", "", item?.mark || "") + markers.map(label => option(label, label, item?.mark)).join(""), "required")) + '</div>' +
+    field("关联周期任务（选填）", select("task", taskOptions(chosen, item?.task || ""))) + tagsField(item?.tags || "") +
+    field("事件照片（选填）", input("photo", "", "file", 'multiple accept="image/*,.tif,.tiff,.heic,.heif,.dng"')) +
+    files(item, true) + '<label class="check"><input type="checkbox" name="email"' +
+    (item?.email ? " checked" : "") + '>加入邮件提醒</label>'));
+  updateProjectFields(modal.querySelector("form"));
+}
+
+function updateProjectFields(form) {
+  const choice = form.elements.project.value;
+  form.querySelector("[data-new-project]").hidden = choice !== "new";
+  form.elements.newProject.required = choice === "new";
+  if (form.elements.owner) form.elements.owner.innerHTML = projectMembers(choice, form.elements.owner.value);
+  if (form.elements.task) form.elements.task.innerHTML = taskOptions(choice, form.elements.task.value);
+}
+
+function delayRange(phase) {
+  const dayAfterDue = plus(phase.due, 1);
+  return { min: dayAfterDue < state.today ? state.today : dayAfterDue, max: plus(phase.ends, -1) };
+}
+
+function detailTask(item, wanted) {
+  if (!item) return notice("找不到该周期任务或你没有访问权限");
+  const current = phase(item);
+  const h = item.phases.find(value => value.id === Number(wanted)) || current;
+  const archived = Boolean(item.archived || project(item.project).archived);
+  const due = h.due;
+  const canAct = !publicView && !archived && due && due <= state.today;
+  const ended = h.ends <= state.today;
+  const delay = canAct && !ended && !h.closed ? delayRange(h) : null;
+  const row = !publicView && h.id === current.id && !h.closed && ended && !archived;
+  const taskData = { id: item.id, phase: h.id };
+  const actions = h.actions;
+  const attachments = files(item);
+  show(item.name, '<div class="row between"><p class="muted">' + esc(project(item.project).name) +
+    (publicView ? "" : ' · 负责人 ' + esc(item.owner_name || "未设置")) + '</p>' + tagList(item.tags) + '</div>' +
+    (archived ? '<p>' + pill("已归档") + ' 预计清理 ' + esc(item.purge || project(item.project).purge) + '</p>' : "") +
+    (attachments ? '<div class="stack">' + attachments + '</div>' : "") +
+    '<div class="row">' + item.phases.map((value, i) => button("阶段 " + (i + 1), "task-detail", {
+      id: item.id, phase: value.id,
+    }, value.id === h.id ? "primary" : "")).join("") + '</div><div class="history">' +
+    '<h3>培养阶段</h3><p>开始 ' + h.start + ' · 每 ' + h.period + ' 天 · 共 ' + h.length + ' 天</p>' +
+    '<p>阶段结束 ' + h.ends + (h.closed ? " · 已处理" : ended ? " · 待确认" : "") + '</p>' +
+    (due ? '<p>' + (h.closed || ended ? "历史待办 " : "下一次待办 ") + due +
+      (due < state.today && !ended ? " · 逾期" : "") + '</p>' : "") + '</div>' +
+    (canAct ? '<div class="row">' + button("标记已完成", "action", { ...taskData, kind: "complete" }, "primary") +
+      (delay && delay.min <= delay.max ? button("延期", "action", { ...taskData, kind: "delay" }) : "") +
+      button("跳过", "action", { ...taskData, kind: "skip" }) + '</div>' : "") +
+    (delay && delay.min > delay.max ? '<p class="muted">本阶段于 ' + h.ends +
+      ' 结束，阶段结束前已没有可延期的日期。如需安排更晚的操作，请先编辑阶段时长。</p>' : "") +
+    (row ? '<div class="row">' + button("进入下一阶段", "next-phase", taskData, "primary") +
+      button("完全结束", "finish-phase", taskData, "danger") + '</div>' : "") +
+    '<div class="history"><h3>操作记录</h3>' + (actions.length ? actions.map(a => '<p>' +
+      esc((states[a.kind] || a.kind) + (a.void ? "（已更正）" : "") +
+        (publicView ? "" : " · " + a.username) + " · " + timestamp(a.at) +
+        (a.kind === "delay" ? " · 改至 " + a.result : "")) + '</p>').join("") : '<p class="muted">暂无操作。</p>') +
+    (!publicView && !archived && actions.some(a => !a.void && a.kind !== "correct") ?
+      button("更正最近一次操作", "action", { ...taskData, kind: "correct" }, "link") : "") + '</div>' +
+    (publicView ? "" : '<div class="row">' + (archived ? item.archived && !project(item.project).archived ?
+      button("恢复任务", "restore-task", { id: item.id }, "primary") : "" :
+      button("编辑任务", "edit-task", { id: item.id }) + button("归档任务", "archive-task", { id: item.id }, "danger")) + '</div>'));
+}
+
+function detailEvent(item) {
+  if (!item) return notice("找不到该事件或你没有访问权限");
+  show("事件详情", '<p class="muted">' + esc(project(item.project).name + " · " + item.day +
+    (publicView ? "" : " · " + item.username)) +
+    '</p><div class="row">' + pill(item.mark, "event") + tagList(item.tags) +
+    (item.email ? pill("邮件提醒") : "") + '</div><p>' + esc(item.content) + '</p>' +
+    (item.task ? '<p>关联任务 ' + esc(task(item.task)?.name || "") + '</p>' : "") +
+    files(item) + (publicView ? "" : '<div class="row">' + button("编辑事件", "edit-event", { id: item.id }) +
+    button("删除事件", "delete-event", { id: item.id }, "danger") + '</div>'));
+}
+
+function actionDialog(item, phaseId, kind) {
+  const h = item.phases.find(value => value.id === Number(phaseId));
+  const label = kind === "delay" ? "延期待办" : states[kind];
+  const actual = kind === "complete";
+  let dateField = actual ? field("实际完成日期", input("date", state.today, "date")) : "";
+  if (kind === "delay") {
+    const { min, max } = delayRange(h);
+    if (min > max) return detailTask(item, phaseId);
+    dateField = field("延期至", input("date", min, "date", 'required min="' + min + '" max="' + max + '"') +
+      '<small>可选日期 ' + min + (min === max ? '' : ' 至 ' + max) + '。阶段结束日为 ' + h.ends + '。</small>');
+  }
+  const timeField = actual ? field("实际完成时间（北京时间，选填）", input("time", "", "time", "")) : "";
+  show(label, '<p>' + esc(item.name + " · " + (h.due || h.ends)) + '</p>' + form("task/action",
+    input("task", item.id, "hidden", "") + input("phase", h.id, "hidden", "") + input("kind", kind, "hidden", "") +
+    input("due", h.due || "", "hidden", "") + input("version", h.actions[0]?.id || 0, "hidden", "") +
+    dateField + timeField, "确认"));
+}
+
+const modalActions = {
+  export: exportDialog,
+  "new-project": () => show("新建实验项目", form("project/create",
+    field("实验项目名称", input("name", "", "text", 'required maxlength="200"')), "创建")),
+  "rename": ({ id }) => show("重命名实验项目", form("project/rename",
+    input("id", id, "hidden", "") + field("名称", input("name", project(id).name, "text", 'required maxlength="200"')))),
+  "archive-project": ({ id }) => confirmForm("解散实验项目",
+    "成员将失去访问权限，实验内容保留六个月。恢复后由组长重新添加成员。",
+    "project/archive", { id }),
+  "restore-project": ({ id }) => confirmForm("恢复实验项目", "恢复内容后，你可以重新添加工作组成员。",
+    "project/restore", { id }),
+  "share": ({ id }) => {
+    const group = (state.group?.members || []).filter(u => !project(id).members.some(m => m.id === u.id));
+    show("分享实验项目", '<p class="muted">工作组成员可以查看并编辑这个实验。</p>' +
+      (group.length ? '<div class="stack"><h3>从课题组选人</h3>' + group.map(u => listItem(u.name, "同组成员",
+        button("分享给此成员", "share-group", { id, name: u.name }))).join("") + '</div><hr class="hr">' : "") +
+      form("project/share", input("id", id, "hidden", "") +
+        field("按用户名分享", input("name", "", "text", 'required maxlength="40"')), "分享"));
+  },
+  "share-group": ({ id, name }) => confirmForm("分享实验项目", "分享给 " + name + "。", "project/share", { id, name }),
+  "remove-member": ({ id, user }) => confirmForm("移除成员", "该成员将失去这个实验的访问权限。", "project/remove", { id, user }),
+  "group-leave": () => confirmForm("退出课题组", "已有的实验工作组访问权限仍然有效。", "group", { mode: "leave" }),
+  "group-create": () => show("新建课题组", form("group", input("mode", "create", "hidden", "") +
+    field("课题组名称", input("name", state.user.group_name, "text", 'required maxlength="100"')), "创建并加入")),
+  "group-join": () => show("加入课题组", form("group", input("mode", "join", "hidden", "") +
+    field("组码", input("code", invite, "text", 'required maxlength="30"')), "加入")),
+  "new-task": ({ project }) => editTask(null, project),
+  "edit-task": ({ id }) => editTask(task(id)),
+  "task-detail": ({ id, phase }) => detailTask(task(id), phase),
+  "new-event": ({ project, day }) => editEvent(null, project, day),
+  "edit-event": ({ id }) => editEvent(event(id)),
+  "event-detail": ({ id }) => detailEvent(event(id)),
+  "delete-event": ({ id }) => confirmForm("删除事件", "删除后无法恢复。", "event", { id, delete: "true" }),
+  "action": ({ id, phase, kind }) => actionDialog(task(id), phase, kind),
+  "next-phase": ({ id, phase }) => show("进入下一阶段", form("task/phase",
+    input("task", id, "hidden", "") + input("phase", phase, "hidden", "") + input("choice", "next", "hidden", "") +
+    phaseInputs(null, state.today), "开启下一阶段")),
+  "finish-phase": ({ id, phase }) => confirmForm("完全结束", "整条任务将归档六个月，历史记录一并保留。", "task/phase",
+    { task: id, phase, choice: "finish" }),
+  "archive-task": ({ id }) => confirmForm("归档任务", "立即停止未来提醒，六个月内可以恢复。", "task/archive", { id }),
+  "restore-task": ({ id }) => {
+    const item = task(id);
+    const h = phase(item);
+    if (h.ends <= state.today) return confirmForm("恢复任务", "原阶段已结束。恢复后可处理阶段结束事件。",
+      "task/archive", { id, restore: "true" });
+    show("恢复任务", '<p>原阶段结束日 ' + h.ends + ' · 每 ' + h.period + ' 天一次</p>' +
+      form("task/archive", input("id", id, "hidden", "") + input("restore", "true", "hidden", "") +
+        field("从哪天继续", input("resume", state.today, "date", 'required min="' + state.today + '"')), "恢复"));
+  },
+};
+
+document.addEventListener("click", async event => {
+  const control = event.target.closest("[data-action]");
+  if (!control) return;
+  const d = control.dataset;
+  if (publicView && !["close", "nav", "project", "project-calendar", "day", "today", "month",
+    "task-detail", "event-detail"].includes(d.action)) return;
+  if (d.action === "auth") { authView = d.target; authNotice = ""; authRender(); return; }
+  if (d.action === "close") { modal.close(); return; }
+  if (!state) return;
+  try {
+    if (d.action in modalActions) { modalActions[d.action](d); return; }
+    if (d.action === "nav") { view = d.view; projectFilter = 0; }
+    if (d.action === "project" || d.action === "project-calendar") {
+      view = d.action === "project" ? "project" : "calendar";
+      projectFilter = Number(d.id);
+    }
+    if (d.action === "day") selected = d.day;
+    if (d.action === "today") { selected = state.today; month = selected.slice(0, 7); }
+    if (d.action === "month") {
+      const date = dayDate(month + "-01");
+      date.setUTCMonth(date.getUTCMonth() + Number(d.step));
+      month = iso(date).slice(0, 7);
+      selected = month + "-01";
+    }
+    if (d.action === "logout") {
+      await request("auth/logout", {});
+      appliedStateRequest = ++stateRequest;
+      state = snapshot = selected = month = null;
+      view = "calendar"; projectFilter = 0; authView = "login"; authNotice = "";
+    }
+    render();
+  } catch (error) {
+    notice(error.message);
+  }
+});
+
+document.addEventListener("change", event => {
+  const element = event.target;
+  if (element.name === "filter") { projectFilter = Number(element.value); render(); }
+  if (element.name === "project" && element.form) updateProjectFields(element.form);
+});
+
+function readFile(file, role) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, role, data: reader.result.split(",")[1] });
+    reader.onerror = () => reject(new Error("无法读取附件"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function payload(form) {
+  const fields = new FormData(form);
+  const result = {};
+  for (const [key, value] of fields) {
+    if (!(value instanceof File) && key !== "removed") result[key] = value;
+  }
+  for (const key of ["id", "project", "task", "owner", "phase", "user", "version"]) {
+    if (key in result && result[key] !== "new") result[key] = result[key] === "" ? null : Number(result[key]);
+  }
+  for (const key of ["subscribed", "delete", "restore"]) {
+    if (key in result) result[key] = Boolean(result[key]);
+  }
+  if (form.dataset.route === "event") result.email = fields.has("email");
+  if (form.dataset.route === "task" || form.dataset.route === "event") {
+    const raw = ["photo", "protocol"].flatMap(role =>
+      fields.getAll(role).filter(file => file instanceof File && file.name).map(file => ({ file, role })));
+    if (raw.some(({ file }) => file.size > 10 * 1024 * 1024) || raw.reduce((n, item) => n + item.file.size, 0) > 20 * 1024 * 1024)
+      throw new Error("单个附件最多 10 MB，本次上传合计最多 20 MB。");
+    result.files = await Promise.all(raw.map(({ file, role }) => readFile(file, role)));
+    result.removed = fields.getAll("removed").map(Number);
+  }
+  return result;
+}
+
+document.addEventListener("submit", async event => {
+  const form = event.target.closest("form[data-route]");
+  if (!form) return;
+  event.preventDefault();
+  if (publicView) return;
+  const route = form.dataset.route;
+  const errorBox = form.querySelector(".form-error");
+  const save = form.querySelector("[type=submit]");
+  save.disabled = true;
+  errorBox.textContent = "";
+  try {
+    if (route === "export") {
+      await exportPublicPage(form);
+      return;
+    }
+    const data = await payload(form);
+    const result = await request(route, data);
+    if (route.startsWith("auth/")) {
+      if (route === "auth/login") {
+        await refresh();
+        openDeepLink();
+      } else {
+        authNotice = result.message;
+        authView = "login";
+        render();
+      }
+      return;
+    }
+    if (modal.open) modal.close();
+    if (route === "group") {
+      invite = "";
+      sessionStorage.removeItem("lab-invite");
+    }
+    if (route === "project/create") { view = "project"; projectFilter = result.id; }
+    if (route === "project/archive") { view = "archive"; projectFilter = 0; }
+    await refresh();
+    if (route === "task/action" || (route === "task/phase" && data.choice === "next"))
+      detailTask(task(data.task), route === "task/action" ? data.phase : 0);
+    else if (route === "task") detailTask(task(result.id));
+    else if (route === "event" && result.id) detailEvent(event(result.id));
+    notice("已保存");
+  } catch (error) {
+    if (error.status === 409 && state) {
+      await refresh().catch(() => {});
+      if (route === "task/action" && modal.open) {
+        const id = Number(form.elements.task?.value);
+        if (task(id)) detailTask(task(id), Number(form.elements.phase?.value));
+      }
+      notice(error.message);
+    } else {
+      errorBox.textContent = error.message;
+      if (!form.isConnected) notice(error.message);
+    }
+  } finally {
+    save.disabled = false;
+  }
+});
+
+function openDeepLink() {
+  if (openExport) {
+    openExport = false;
+    exportDialog();
+  }
+  if (deep.task) { detailTask(task(deep.task)); deep.task = 0; }
+  if (deep.event) { detailEvent(event(deep.event)); deep.event = 0; }
+  if (invite) { view = "group"; render(); modalActions["group-join"](); }
+}
+
+async function start() {
+  if (publicView) {
+    state = JSON.parse(document.querySelector("#public-data").textContent);
+    selected = state.today;
+    month = selected.slice(0, 7);
+    render();
+    openDeepLink();
+    return;
+  }
+  if (authLink) { authRender(); return; }
+  try {
+    await refresh();
+    openDeepLink();
+  } catch (error) {
+    if (error.status === 401) authRender();
+    else app.textContent = "无法连接实验日程，请刷新页面重试。";
+  }
+}
+
+start();
+if (!publicView) setInterval(() => {
+  if (!state || document.hidden) return;
+  refresh().catch(error => {
+    if (error.status === 401) {
+      state = snapshot = null;
+      if (modal.open) modal.close();
+      authView = "login";
+      authNotice = "登录已过期，请重新登录。";
+      render();
+    }
+  });
+}, 3000);
+</script>
+</body>
+</html>
